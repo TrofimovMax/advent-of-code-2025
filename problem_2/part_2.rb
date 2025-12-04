@@ -1,5 +1,7 @@
 # frozen_range_literal: true
 
+require 'benchmark'
+
 # @param {range} s
 # @return {Boolean}
 def repeated_sequence?(s)
@@ -18,23 +20,27 @@ def repeated_sequence?(s)
   false
 end
 
-file_path = File.join(__dir__, "hard.txt") # "easy.txt"
-ranges  = File.read(file_path, chomp: true).gsub("\n", "").split(",")
+time = Benchmark.realtime do
+  file_path = File.join(__dir__, "hard.txt") # "easy.txt"
+  ranges  = File.read(file_path, chomp: true).gsub("\n", "").split(",")
 
-sum = 0
+  sum = 0
 
-ranges.each do |range|
-  from_str, to_str = range.split("-")
-  from = from_str.to_i
-  to   = to_str.to_i
+  ranges.each do |range|
+    from_str, to_str = range.split("-")
+    from = from_str.to_i
+    to   = to_str.to_i
 
-  puts "Running for #{from} to #{to}"
-  (from..to).each do |id|
-    if repeated_sequence?(id.to_s)
-      puts "invalid ID: #{id}"
-      sum += id
+    # puts "Running for #{from} to #{to}"
+    (from..to).each do |id|
+      if repeated_sequence?(id.to_s)
+        # puts "invalid ID: #{id}"
+        sum += id
+      end
     end
   end
+
+  puts "SUM = #{sum}"
 end
 
-puts "SUM = #{sum}"
+puts "Время выполнения: #{time} секунд"
