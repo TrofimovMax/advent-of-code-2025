@@ -30,4 +30,4 @@ time = Benchmark.realtime do
   puts sum_voltage.inspect
 end
 
-puts "Время выполнения: #{time} секунд"
+puts "Execution time: #{time} seconds"
