@@ -1,0 +1,49 @@
+# frozen_string_literal: true
+require 'benchmark'
+
+filename = "hard.txt" # "easy.txt"
+time = Benchmark.realtime do
+  points = File.readlines(File.join(__dir__, filename), chomp: true)
+               .reject(&:empty?)
+               .map.with_index { |l,i| [i, *l.split(',').map(&:to_i)] }
+
+  junction_boxes = filename == "easy.txt" ? 10 : 1000
+  n = points.size
+
+  pairs = []
+  (0...n).each do |i|
+    xi, yi, zi = points[i][1..3]
+    ((i+1)...n).each do |j|
+      xj, yj, zj = points[j][1..3]
+      dx, dy, dz = xi-xj, yi-yj, zi-zj
+      pairs << [dx*dx + dy*dy + dz*dz, i, j]
+    end
+  end
+
+  pairs.sort_by!(&:first)
+
+  parent = Array.new(n) { |i| i }
+  size = Array.new(n,1)
+
+  find = ->(x) { parent[x] == x ? x : parent[x] = find.call(parent[x]) }
+  union = ->(a,b) {
+    ra, rb = find.call(a), find.call(b)
+    return false if ra == rb
+    ra, rb = rb, ra if size[ra] < size[rb]
+    parent[rb] = ra
+    size[ra] += size[rb]
+    size[rb] = 0
+    true
+  }
+
+  pairs.first(junction_boxes).each { |_, i, j| union.call(i,j) }
+
+  comp_sizes = (0...n).map { |i| find.call(i) }.tally.values.sort.reverse
+  top3 = comp_sizes.first(3)
+  product = top3.inject(1, :*)
+
+  puts "Top 3 sizes: #{top3}"
+  puts "Product of top 3: #{product}"
+end
+
+puts "Execution time: #{time} seconds"
